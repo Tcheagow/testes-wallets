@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teste Google Pay</title>
+<style>
+    body { font-family: sans-serif; padding: 16px; }
+    pre { white-space: pre-wrap; word-break: break-word; font-size: 15px; }
+</style>
+</head>
+<body>
+<h3>Teste Google Pay isReadyToPay</h3>
+<pre id="out">carregando pay.js...</pre>
+
+<script>
+    var out = document.getElementById("out");
+    var log = function(text) { out.textContent += "\n" + text; };
+
+    window.addEventListener("error", function(e) {
+        log("ERRO GLOBAL: " + e.message);
+    });
+
+    var runTest = function() {
+        log("UA: " + navigator.userAgent);
+        log("Protocolo: " + window.location.protocol);
+
+        if (typeof google === "undefined" || !google.payments || !google.payments.api) {
+            log("RESULTADO: google.payments.api não existe");
+            return;
+        }
+
+        try {
+            var client = new google.payments.api.PaymentsClient({ environment: "PRODUCTION" });
+            client.isReadyToPay({
+                apiVersion: 2,
+                apiVersionMinor: 0,
+                allowedPaymentMethods: [{
+                    type: "CARD",
+                    parameters: {
+                        allowedAuthMethods: ["PAN_ONLY", "CRYPTOGRAM_3DS"],
+                        allowedCardNetworks: ["AMEX", "ELO", "MASTERCARD", "VISA"]
+                    }
+                }]
+            }).then(function(response) {
+                log("RESULTADO: " + JSON.stringify(response));
+            }).catch(function(error) {
+                log("RESULTADO: ERRO " + (error.statusCode || error.message || error));
+            });
+        } catch (error) {
+            log("RESULTADO: ERRO AO CRIAR O CLIENTE " + error);
+        }
+    };
+
+    var script = document.createElement("script");
+    script.src = "https://pay.google.com/gp/p/js/pay.js";
+    script.onload = runTest;
+    script.onerror = function() { log("RESULTADO: falhou ao carregar o pay.js"); };
+    document.head.appendChild(script);
+</script>
+</body>
+</html>

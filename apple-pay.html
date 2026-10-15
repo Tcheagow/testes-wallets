@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teste Apple Pay</title>
+<style>
+    body { font-family: sans-serif; padding: 16px; }
+    pre { white-space: pre-wrap; word-break: break-word; font-size: 15px; }
+</style>
+</head>
+<body>
+<h3>Teste Apple Pay canMakePayments</h3>
+<pre id="out">iniciando...</pre>
+
+<script>
+    var out = document.getElementById("out");
+    var log = function(text) { out.textContent += "\n" + text; };
+
+    window.addEventListener("error", function(e) {
+        log("ERRO GLOBAL: " + e.message);
+    });
+
+    var checkCanMakePayments = function(label) {
+        if (typeof window.ApplePaySession === "undefined") {
+            log(label + ": window.ApplePaySession não existe");
+            return;
+        }
+
+        try {
+            log(label + ": typeof ApplePaySession = " + typeof window.ApplePaySession);
+            log(label + ": canMakePayments() = " + window.ApplePaySession.canMakePayments());
+        } catch (error) {
+            log(label + ": ERRO " + error);
+        }
+    };
+
+    log("UA: " + navigator.userAgent);
+    log("Protocolo: " + window.location.protocol);
+
+    log("");
+    log("--- 1. SEM carregar o SDK da Apple ---");
+    checkCanMakePayments("sem SDK");
+
+    log("");
+    log("--- 2. COM o SDK da Apple ---");
+    var script = document.createElement("script");
+    script.src = "https://applepay.cdn-apple.com/jsapi/1.latest/apple-pay-sdk.js";
+    script.crossOrigin = "anonymous";
+    script.onload = function() {
+        checkCanMakePayments("com SDK");
+        log("");
+        log("FIM");
+    };
+    script.onerror = function() {
+        log("com SDK: falhou ao carregar o apple-pay-sdk.js");
+        log("");
+        log("FIM");
+    };
+    document.head.appendChild(script);
+</script>
+</body>
+</html>
